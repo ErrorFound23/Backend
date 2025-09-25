@@ -1,0 +1,28 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "a basic app to deploy",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ErrorFound23/Backend.git"
+  },
+  "keywords": [
+    "node",
+    "backend"
+  ],
+  "author": "yash rana",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ErrorFound23/Backend/issues"
+  },
+  "homepage": "https://github.com/ErrorFound23/Backend#readme",
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0"
+  }
+}
