@@ -1,0 +1,30 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "connect backend with frontend",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ErrorFound23/Backend.git"
+  },
+  "keywords": [
+    "node",
+    "backend",
+    "frontend",
+    "connect"
+  ],
+  "author": "yash rana",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ErrorFound23/Backend/issues"
+  },
+  "homepage": "https://github.com/ErrorFound23/Backend#readme",
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0"
+  }
+}
