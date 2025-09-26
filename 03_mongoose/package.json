@@ -1,0 +1,25 @@
+{
+  "name": "03_mongoose",
+  "version": "1.0.0",
+  "description": "backend with mongoose database service",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ErrorFound23/Backend.git"
+  },
+  "author": "yash rana",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ErrorFound23/Backend/issues"
+  },
+  "homepage": "https://github.com/ErrorFound23/Backend#readme",
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "mongoose": "^8.18.2"
+  }
+}
