@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "This is youtube project backend",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ErrorFound23/Backend.git"
+  },
+  "author": "yash rana",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ErrorFound23/Backend/issues"
+  },
+  "homepage": "https://github.com/ErrorFound23/Backend#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
