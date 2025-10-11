@@ -22,6 +22,7 @@ connectDB() // Return a promise
   .catch((error) => {
     console.log("MONGO db connection faild !!!", error);
   });
+
 // Immediately Invoked Function Expression (IIFE)
 /*
 (async () => {
@@ -44,3 +45,16 @@ connectDB() // Return a promise
   }
 })();
 */
+
+// routes  import
+import userRouter from "./routes/user.routes.js";
+
+// NOTE: When we declare router and controller in sperate file then we use app.use(to import router and controller we need middleware) instead of app.get to define routes.
+
+// routes declaration
+app.use("/api/v1/users", userRouter);
+app.get("/api/v1/", (req, res) => {
+  res.send("Hello world!");
+});
+
+// http://localhost:5000/api/v1/users/register
