@@ -1,4 +1,5 @@
 // https://nodejs.org/api/errors.html
+// https://claude.ai/chat/107c4c11-3eb8-4092-adcb-b4692656a2dc  - what is call stack or stack
 
 class ApiError extends Error {
   constructor(

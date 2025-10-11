@@ -40,13 +40,13 @@ const userSchema = new mongoose.Schema(
 );
 
 // => hash password using bcrypt.hash method
-// avoid arrow function because arrow function does't have this context.
+// avoid arrow function because arrow function does't have "this context".
 userSchema.pre("save", async function (next) {
   // avoid update(hash) a password every time when any document field was modified
   // or
   //  create a hash password only when new user password assign, modified or update.
   if (!this.isModified("password")) return next();
-  this.password = bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
