@@ -29,7 +29,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  const existedUser = User.findOne({ $or: [{ username }, { email }] });
+  const existedUser = await User.findOne({ $or: [{ username }, { email }] });
 
   // If user already exists
   if (existedUser) {
@@ -37,9 +37,18 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // middleware(using multer) allow us to handle file using res.files
-  console.log(req.filels);
+  // console.log("files : ", req.files);
   const avatarLocalPath = req.files?.avatar[0]?.path; //  uploaded file local server path
-  const coverImagePath = req.files?.coverImage[0]?.path;
+  // const coverImagePath = req.files?.coverImage[0]?.path; // to avoid undefine error
+
+  let coverImagePath;
+  if (
+    req.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImagePath = req.files.coverImage[0].path;
+  }
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is requird");
