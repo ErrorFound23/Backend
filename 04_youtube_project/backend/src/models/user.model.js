@@ -56,6 +56,8 @@ userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
+// short lived
+// use when any feature needed user authorization
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
@@ -69,11 +71,13 @@ userSchema.methods.generateAccessToken = function () {
   );
 };
 
+// long lived
+// use to avaid loging multiple times by hitting any END POINT(server match user's request-refresh-token to user's stored database-refresh-token, if both tokens are matched server create new access-token by itself)
 // refresh token store less info then access token
 userSchema.methods.generateRefreshToken = function () {
-  jwt.sign(
+  return jwt.sign(
     {
-      _id: this._id, 
+      _id: this._id,
     },
     process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }

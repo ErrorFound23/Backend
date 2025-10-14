@@ -4,6 +4,25 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+const generateAccessAndRefreshTokens = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    // store refresh token in database
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false }); // to avoid validation(or avoid various fields validation kickin, it because save method want whole document)
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "Something went wrong while generating refresh and access tokens"
+    );
+  }
+};
+
 const registerUser = asyncHandler(async (req, res) => {
   // get user details from frontend
   // validation  - not empty
@@ -85,4 +104,94 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, createdUser, "User registered Successfully"));
 });
 
-export { registerUser };
+const loginUser = asyncHandler(async (req, res) => {
+  // get req.body data
+  // check email and password values are not empty(including null and undefined)
+  // check email is exists or not, if exists then check password,  if not exists then throw a error "email does't exists"
+  // if email exists then compare password with database stored hash-password using bcrypt.compare method
+  // generate access token and refresh token for user and send using "secure cookie".
+  // if password and hash-password are not match then throw a error "wrong email and password"
+  // if email and password both are match then successfully login user.
+
+  const { username, email, password } = req.body;
+
+  if (!(username || email)) {
+    throw new ApiError(400, "username or email is required");
+  }
+
+  if (!password) {
+    throw new ApiError(400, "password is required");
+  }
+
+  // User.findOne => available through mongoose
+  const user = await User.findOne({ $or: [{ username }, { email }] });
+
+  if (!user) {
+    throw new ApiError(404, "User does't exists");
+  }
+
+  // own created user.model method
+  // available in your user
+  const isPasswordValid = await user.isPasswordCorrect(password);
+
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid user credentials");
+  }
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+    user._id
+  );
+
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
+
+  // Stored cookies in client machine
+  // Bydefault cookies are modified by everyone from client-side to avoid it we defined some options to stop cookies modification form client-side but same cookies are accessible to mondify by server-side.
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  // we can user cookie method because we already set cookie middleware globally.
+  return res
+    .status(201)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { user: loggedInUser, accessToken, refreshToken },
+        "User logged in successfully"
+      )
+    );
+});
+
+const logoutUser = asyncHandler(async (req, res) => {
+  // remove refreshToken from database when user logout
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        refreshToken: undefined,
+      },
+    },
+    {
+      new: true, // return new updated document
+    }
+  );
+
+  // remvoe refreshToken and accessToken from client browser when logout
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, {}, "User logged out"));
+});
+
+export { registerUser, loginUser, logoutUser };

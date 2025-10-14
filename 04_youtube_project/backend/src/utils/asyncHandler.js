@@ -1,3 +1,4 @@
+// use with external web methods
 const asyncHandler = (requestHandler) => {
   return (req, res, next) => {
     Promise.resolve(requestHandler(req, res, next)).catch(
