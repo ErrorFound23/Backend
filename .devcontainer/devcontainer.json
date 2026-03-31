@@ -32,7 +32,8 @@
         "terminal.integrated.suggest.enabled": true,
         "emmet.includeLanguages": {
           "javascript": "javascriptreact"
-        }
+        },
+        "autoSave": "off"
       }
     }
   },
