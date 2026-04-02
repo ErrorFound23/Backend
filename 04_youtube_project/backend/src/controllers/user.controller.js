@@ -1,7 +1,10 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import {
+  uploadOnCloudinary,
+  removeFromcloudinary,
+} from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 
@@ -294,7 +297,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Account details updated successfully"));
 });
 
-const updatUserAvatar = asyncHandler(async (req, res) => {
+const updateUserAvatar = asyncHandler(async (req, res) => {
   // req.file used for single file
   const avatarLocalPath = req.file?.path;
 
@@ -319,12 +322,22 @@ const updatUserAvatar = asyncHandler(async (req, res) => {
     { new: true }
   ).select("-password -refreshToken");
 
+  const oldAvatar = req.user?.avatar;
+
+  if (oldAvatar) {
+    const deleteResponse = await removeFromcloudinary(oldAvatar);
+    if (!deleteResponse || deleteResponse.result !== "ok") {
+      // console.log("Failed to delete old avatar");
+      throw new ApiError(400, "Failed to delete old avatar");
+    }
+  }
+
   return res
     .status(200)
     .json(new ApiResponse(200, user, "avatar image updated successfully"));
 });
 
-const updatUserCoverImage = asyncHandler(async (req, res) => {
+const updateUserCoverImage = asyncHandler(async (req, res) => {
   // req.file used for single file
   const coverImageLocalPath = req.file?.path;
 
@@ -349,6 +362,15 @@ const updatUserCoverImage = asyncHandler(async (req, res) => {
     { new: true }
   ).select("-password -refreshToken");
 
+  const oldCoverImage = req.user?.coverImage;
+
+  if (oldCoverImage) {
+    const deleteResponse = await removeFromcloudinary(oldCoverImage);
+    if (!deleteResponse || deleteResponse.result !== "ok") {
+      throw new ApiError(400, "Failed to delete old cover image");
+    }
+  }
+
   return res
     .status(200)
     .json(new ApiResponse(200, user, "Cover image updated successfully"));
@@ -363,6 +385,6 @@ export {
   changeCurrentPassword,
   getCurrentUser,
   updateAccountDetails,
-  updatUserAvatar,
-  updatUserCoverImage,
+  updateUserAvatar,
+  updateUserCoverImage,
 };
