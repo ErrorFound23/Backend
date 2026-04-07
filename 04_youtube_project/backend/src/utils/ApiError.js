@@ -11,7 +11,7 @@ class ApiError extends Error {
     super(message);
     this.statusCode = statusCode;
     this.data = null; // find on internet // Optional, always return data: null
-    // this.message = message;
+    // this.message = message; // "Error class" already have build-in error so , you don't need to overwrite "Error class" error message instead of use super(message) to use or inherit build-in error without overwriting. 
     this.success = false;
     this.errors = errors;
 

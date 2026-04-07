@@ -1,4 +1,4 @@
-// use with external web methods
+// use for avoid try-catch block every time whenever you need to write async response, clean code upproch
 const asyncHandler = (requestHandler) => {
   return (req, res, next) => {
     Promise.resolve(requestHandler(req, res, next)).catch(
