@@ -7,6 +7,7 @@ import {
 } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -271,7 +272,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
-    .json(200, req.user, "Current user fetched successfully");
+    .json(new ApiResponse(200, req.user, "Current user fetched successfully"));
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
@@ -377,6 +378,154 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 });
 
 // NOTE: Use different END POINT to update file data
+
+const getUserchannelProfile = asyncHandler(async (req, res) => {
+  const { username } = req.params;
+
+  if (!username?.trim()) {
+    throw new ApiError(400, "username is missing");
+  }
+
+  // User.find({username})
+
+  const channel = await User.aggregate([
+    {
+      $match: { username: username?.toLowerCase() },
+    },
+    {
+      // $lookup use to marge to two or more collections by using localField and foreignField
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo",
+      },
+    },
+
+    {
+      // $addFields use to add new additional field in current document
+
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers",
+        },
+        channelsSubscribedToCount: {
+          $size: "$subscribedTo",
+        },
+        isSubscribed: {
+          // conditional statement
+          $cond: {
+            // if take conditional statement
+            if: {
+              // $in check exists or not
+              $in: [req.user?._id, "$subscribers.subscriber"],
+            }, // some doubt here
+            // then take true statement and else take false statement
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        fullName: 1,
+        username: 1,
+        subscribersCount: 1,
+        channelsSubscribedToCount: 1,
+        isSubscribed: 1,
+        avatar: 1,
+        coverImage: 1,
+        email: 1,
+      },
+    },
+  ]);
+
+  // console.log(channel);
+
+  if (!channel?.length) {
+    throw new ApiError(404, "Channel does not exists");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, channel[0]), "user channel fetch successfully");
+});
+
+const getWatchHistory = asyncHandler(async (req, res) => {
+  const user = await User.aggregate([
+    {
+      $match: {
+        // here, mongoose can't convert _id from string to object directly like find, findOne and many more method instead of we need to convert it manually
+        _id: new mongoose.Types.ObjectId(req.user._id),
+      },
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "watchHistory",
+        foreignField: "_id",
+        as: "watchHistory",
+
+        // pipline allows to marge two or more collection inside existing $lookup (or as nesting $lookup).
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {
+                  $project: {
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addFields: {
+              owner: {
+                // you can also use $arrayElemAt instead of $first to remove nestingness form result
+                $first: "$owner",
+              },
+            },
+          },
+        ],
+      },
+    },
+    // {
+    //   $project: {
+    //     password: 0,
+    //     createdAt: 0,
+    //     updatedAt: 0,
+    //     refreshToken: 0,
+    //   },
+    // },
+  ]);
+
+  return res
+    .status(200) // API response status code shows in frontend browser network option.
+    .json(
+      new ApiResponse(
+        200, // normal json data store in response object
+        user[0].watchHistory,
+        "watch history fetch successfully"
+      )
+    );
+});
+
 export {
   registerUser,
   loginUser,
@@ -387,4 +536,6 @@ export {
   updateAccountDetails,
   updateUserAvatar,
   updateUserCoverImage,
+  getUserchannelProfile,
+  getWatchHistory,
 };
