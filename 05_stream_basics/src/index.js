@@ -2,9 +2,11 @@ import express from "express";
 import fs from "fs";
 import status from "express-status-monitor";
 import zlib from "zlib";
+import streams from "./streams.js";
 
 const app = express();
 const port = 5000;
+streams();
 
 app.use(status());
 
@@ -17,7 +19,7 @@ fs.createReadStream("./src/sample.txt").pipe(
 
 app.get("/", (req, res) => {
   // Without stream, all the data of a file load once in buffer(as Binary) and then after store in variable memory(as String if you mention encoding like "utf-8") in node.js, which make ineffiecient use of memory.
-  
+
   //   fs.readFile("./src/sample.txt", "utf-8", (err, data) => {
   //     if (err) {
   //     //   console.error("Error reading file:", err);
