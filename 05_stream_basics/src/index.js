@@ -16,6 +16,8 @@ fs.createReadStream("./src/sample.txt").pipe(
 );
 
 app.get("/", (req, res) => {
+  // Without stream, all the data of a file load once in buffer(as Binary) and then after store in variable memory(as String if you mention encoding like "utf-8") in node.js, which make ineffiecient use of memory.
+  
   //   fs.readFile("./src/sample.txt", "utf-8", (err, data) => {
   //     if (err) {
   //     //   console.error("Error reading file:", err);
